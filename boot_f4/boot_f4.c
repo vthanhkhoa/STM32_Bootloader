@@ -44,6 +44,14 @@ void flash_read(volatile uint32_t addreg, uint8_t *dataread, uint32_t datalen)
 }
 void bootloader(volatile uint32_t addr_new)
 {
-    SCB->VTOR = addr_new;
-    NVIC_SystemReset();
+    void (*app_reset_handler)(void) = NULL;
+    uint32_t app_main_stack_pointer = 0;
+    uint32_t app_reset_handler_addr = 0;
+
+    app_main_stack_pointer = *(volatile uint32_t *)(BASE_ADDRESS_FLASH);
+    __set_MSP(app_main_stack_pointer);
+
+    app_reset_handler_addr = *(volatile uint32_t *)(BASE_ADDRESS_FLASH + 0x4U);
+    app_reset_handler = (void *)app_reset_handler_addr;
+    app_reset_handler();
 }
